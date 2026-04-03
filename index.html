@@ -1,96 +1,96 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script defer src="/_vercel/insights/script.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css"
-    />
-    <title>Vercel HTML Starter</title>
-    <meta
-      name="description"
-      content="High-performance HTML based website template."
-    />
-  </head>
-  <body>
-    <h1>Vercel HTML Starter</h1>
-    <p>
-      This template is a simple, but powerful single
-      <code>index.html</code> file deployed to
-      <a href="https://vercel.com">Vercel</a>. When your site is deployed, all
-      static assets (like HTML, JavaScript, CSS, images, and more) are deployed
-      globally to every
-      <a href="https://vercel.com/docs/concepts/edge-network/overview"
-        >Vercel Edge Network</a
-      >
-      region.
-    </p>
-    <h2>Simple, privacy-friendly analytics</h2>
-    <p>
-      Want to understand your visitor traffic? Vercel Analytics gives you
-      first-party, privacy-friendly traffic analytics for your HTML site. This
-      template is already configured using the following script:
-    </p>
-    <pre><code>&lt;script defer src="/_vercel/insights/script.js"&gt;&lt;/script&gt;</code></pre>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/analytics">Vercel Analytics</a>.
-    </p>
-    <h2>Integrated with git</h2>
-    <p>
-      Deploying updates to your site is as simple as
-      <code>git push</code> thanks to Vercel's advanced
-      <a href="https://vercel.com/docs/concepts/git">Git Integration</a>.
-      Support for GitHub, GitLab, Bitbucket is zero-configuration, and with the
-      flexible Vercel CLI and API, you can integrate with any tool possible.
-    </p>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/docs/concepts/git">Git Integration</a>.
-    </p>
-    <h2>Fast <code>gzip</code> compression</h2>
-    <p>
-      To help ensure the smallest possible file sizes for your static assets,
-      the Vercel Edge Network compresses files by default using
-      <code>gzip</code>. You can also optionally use
-      <code>brotli</code> compressesion if you prefer.
-    </p>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/docs/concepts/edge-network/compression"
-        >compression</a
-      >.
-    </p>
-    <h2>Advanced routing configuration</h2>
-    <p>
-      Vercel gives you a variety of ways to configure the routing of your
-      website. For example, adding redirects, rewrites, or headers to your page.
-      While you can use <code>vercel.json</code> to define these through JSON,
-      you can also express your routing configuration as code using
-      <a href="https://vercel.com/docs/concepts/functions/edge-middleware"
-        >Vercel Edge Middleware</a
-      >.
-    </p>
-    <p>
-      Middleware runs before the
-      <a href="https://vercel.com/docs/concepts/edge-network/caching"
-        >Vercel Edge Network Cache</a
-      >, so you can configure routing exactly as your application needs. For
-      example, this template uses <code>middleware.js</code> defined in the root
-      of the repository to add additional security headers to the site:
-    </p>
-    <pre><code>referrer-policy: origin-when-cross-origin
-strict-transport-security: max-age=31536000; includeSubDomains; preload
-x-content-type-options: nosniff
-x-dns-prefetch-control: on
-x-frame-options: DENY</code></pre>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/docs/concepts/functions/edge-middleware"
-        >Vercel Edge Middleware</a
-      >.
-    </p>
-  </body>
-</html>
+#if defined _JobSys_included
+    #endinput
+#endif
+#define _JobSys_included
+
+#define BROWSER_JOBS 16
+static const Float:JOB_PICKUP_POS[3] = {1562.7854, 1129.4689, 1038.6233};
+static bool:IsJobBrowserOpen[MAX_PLAYERS];
+
+public OnGameModeInit()
+{
+    Create3DTextLabel("Dasakmebis Centri: {00f5ff}Jobs\n{FFFFFF}Daachiret: {00f5ff}ALT", -1, JOB_PICKUP_POS[0], JOB_PICKUP_POS[1], JOB_PICKUP_POS[2], 5.0, 0, 1);
+    
+    cef_subscribe("job:select", "OnJobSelect");
+    cef_subscribe("job:close", "OnJobCloseUI");
+
+    #if defined Job_OnGameModeInit
+        return Job_OnGameModeInit();
+    #else
+        return 1;
+    #endif
+}
+#if defined _ALS_OnGameModeInit
+    #undef OnGameModeInit
+#else
+    #define _ALS_OnGameModeInit
+#endif
+#define OnGameModeInit Job_OnGameModeInit
+#if defined Job_OnGameModeInit
+    forward Job_OnGameModeInit();
+#endif
+
+public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
+{
+    if(newkeys & KEY_WALK)
+    {
+        if(IsPlayerInRangeOfPoint(playerid, 2.0, JOB_PICKUP_POS[0], JOB_PICKUP_POS[1], JOB_PICKUP_POS[2]))
+        {
+            if(PI[playerid][pMember] != 0) return errortxt(playerid, "Tkven Imyofebit Organizaciashi!");
+            if(IsJobBrowserOpen[playerid]) return 1;
+
+            if(cef_player_has_plugin(playerid)) 
+            {
+                IsJobBrowserOpen[playerid] = true;
+                cef_create_browser(playerid, BROWSER_JOBS, "https://diamond-jobs-v1.surge.sh/index.html", false, true);
+                cef_focus_browser(playerid, BROWSER_JOBS, true);
+                cef_always_listen_keys(playerid, BROWSER_JOBS, true);
+            }
+            else 
+            {
+                ShowPlayerDialog(playerid, 129, DIALOG_STYLE_TABLIST_HEADERS, "{38AF91}CityHall", "{FFFFFF}Samushao\tLevel\nMechanic\t1\nTaxi\t1\nMaterials\t2", "Archeva", "Daxurva");
+            }
+        }
+    }
+    #if defined Job_OnPlayerKeyStateChange
+        return Job_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
+    #else
+        return 1;
+    #endif
+}
+#if defined _ALS_OnPlayerKeyStateChange
+    #undef OnPlayerKeyStateChange
+#else
+    #define _ALS_OnPlayerKeyStateChange
+#endif
+#define OnPlayerKeyStateChange Job_OnPlayerKeyStateChange
+#if defined Job_OnPlayerKeyStateChange
+    forward Job_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
+#endif
+
+forward OnJobSelect(playerid, job_id);
+public OnJobSelect(playerid, job_id)
+{
+    switch(job_id)
+    {
+        case 0: { Job[playerid] = 3; SendClientMessage(playerid, -1, "{38AF91}[Mechanic] {FFFFFF}Daiwyet Mushaoba!"); }
+        case 1: { Job[playerid] = 4; SendClientMessage(playerid, -1, "{38AF91}[Taxi] {FFFFFF}Daiwyet Mushaoba!"); }
+        case 2: { 
+            if(PI[playerid][pLevel] < 2) return errortxt(playerid, "Sachiroa: 2 Level!"), OnJobCloseUI(playerid);
+            Job[playerid] = 6; 
+            SendClientMessage(playerid, -1, "{38AF91}[Materials] {FFFFFF}Daiwyet Mushaoba!"); 
+        }
+    }
+    OnJobCloseUI(playerid);
+    return 1;
+}
+
+forward OnJobCloseUI(playerid);
+public OnJobCloseUI(playerid)
+{
+    IsJobBrowserOpen[playerid] = false;
+    cef_focus_browser(playerid, BROWSER_JOBS, false);
+    cef_always_listen_keys(playerid, BROWSER_JOBS, false);
+    cef_destroy_browser(playerid, BROWSER_JOBS);
+    return 1;
+}
